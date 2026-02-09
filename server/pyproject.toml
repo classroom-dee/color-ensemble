@@ -1,0 +1,21 @@
+[project]
+name = "color-ensemble-backend"
+version = "0.1.0"
+dependencies = [
+    "fastapi[standard]",
+    "uvicorn",
+    "sqlalchemy>=2.0",
+    "pydantic-settings",
+    "python-jose[cryptography]",
+    "passlib[argon2]"
+]
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.format]
+quote-style = "single"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]

@@ -1,0 +1,7 @@
+.swatch.clickable {
+  cursor: crosshair;
+}
+
+.swatch.clickable:hover .color {
+  outline: 2px solid rgba(0,0,0,0.2);
+}
