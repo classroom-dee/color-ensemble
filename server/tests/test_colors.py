@@ -19,7 +19,7 @@ def test_harmony_complementary_red_is_cyan():
 
 
 def test_harmony_endpoint(client):
-    r = client.post('/colors/harmony', json={'hex': '#00ff00'})
+    r = client.post('/api/colors/harmony', json={'hex': '#00ff00'})
     assert r.status_code == 200
     data = r.json()
     assert data['input']['hex'] == '#00ff00'
@@ -35,23 +35,23 @@ def test_harmony_endpoint(client):
 
 def test_favorites_crud(client, auth_header):
     # add
-    r = client.post('/favorites', json={'hex': '#abc'}, headers=auth_header)
+    r = client.post('/api/favorites', json={'hex': '#abc'}, headers=auth_header)
     assert r.status_code == 201
     fav = r.json()
     assert fav['hex'] == '#aabbcc'
     fav_id = fav['id']
 
     # list
-    r = client.get('/favorites', headers=auth_header)
+    r = client.get('/api/favorites', headers=auth_header)
     assert r.status_code == 200
     lst = r.json()
     assert any(x['id'] == fav_id for x in lst)
 
     # delete
-    r = client.delete(f'/favorites/{fav_id}', headers=auth_header)
+    r = client.delete(f'/api/favorites/{fav_id}', headers=auth_header)
     assert r.status_code == 204
 
     # list empty
-    r = client.get('/favorites', headers=auth_header)
+    r = client.get('/api/favorites', headers=auth_header)
     assert r.status_code == 200
     assert all(x['id'] != fav_id for x in r.json())
