@@ -11,7 +11,7 @@ export async function login(email: string, password: string) {
 }
 
 export async function register(email: string, password: string) {
-  await api.post("/auth/register", { email, password });
+  await api.post("/auth/signup", { email, password });
 }
 
 export async function fetchMe(token: string): Promise<User> {

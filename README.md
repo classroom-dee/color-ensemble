@@ -14,3 +14,7 @@ The classic "I can't control the urge to expand my PoC project" type of project
 - `cd server && pytest`
 - e2e not implemented yet
 
+### TODO
+- Fav harmonies view + unit test (endpoint is done)
+- Polish components
+- e2e test
