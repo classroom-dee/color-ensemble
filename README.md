@@ -15,6 +15,8 @@ The classic "I can't control the urge to expand my PoC project" type of project
 - e2e not implemented yet
 
 ### TODO
+- Might be better to use dedicated useFavorite hook for state propagation
 - Fav harmonies view + unit test (endpoint is done)
+- Messages should be reactive e.g., "Added", "Loggin in..." -> timed
 - Polish components
 - e2e test

@@ -6,7 +6,7 @@ import { useColor } from "../../hooks/useColor";
 
 import "./FavoritesPanel.css";
 
-export default function FavoritesPanel() {
+export default function FavoritesPanel({ added }: { added: boolean }) {
   const { token } = useAuth();
   const { setHex } = useColor();
   const [favorites, setFavorites] = useState<Favorite[]>([]);
@@ -18,7 +18,7 @@ export default function FavoritesPanel() {
     getFavorites(token)
       .then(setFavorites)
       .finally(() => setLoading(false));
-  }, [token]);
+  }, [token, setFavorites, added]);
 
   const onDelete = async (id: number) => {
     if (!token) return;
