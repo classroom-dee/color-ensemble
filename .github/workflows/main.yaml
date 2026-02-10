@@ -1,0 +1,184 @@
+name: CI / CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+jobs:
+  CI:
+    if: ${{ github.event_name == 'pull_request' && !contains(github.event.pull_request.title, '#no-ci') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout tree
+        uses: actions/checkout@v4
+
+      - name: Env setup, Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Env setup, Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies, Python
+        working-directory: server
+        run: |
+          python -m pip install --upgrade pip
+          pip install .[dev]
+      
+      - name: Install dependencies, Node
+        working-directory: client
+        run: |
+          npm install
+          npx playwright install --with-deps
+
+      - name: Check style
+        working-directory: client
+        run: npm run lint
+
+      - name: Build
+        working-directory: client
+        run: npm run build
+
+      - name: Run tests, Node
+        working-directory: client
+        run: npm run test:unit
+
+      - name: Run tests, Python
+        working-directory: server
+        run: pytest
+
+      # Not implemented yet
+      # - name: Run Playwright tests
+      #   working-directory: client
+      #   run: npm run test:e2e
+        
+      - name: E2e test report
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: client/playwright-report/
+          retention-days: 30
+
+  Deployment:
+    if: ${{ github.event_name == 'push' }}
+    runs-on: ubuntu-latest
+    outputs:
+      no_tag: ${{ steps.skip_check.outputs.no_tag }}
+      no_alarm: ${{ steps.skip_check.outputs.no_alarm }}
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Check skip
+        id: skip_check
+        run: |
+          msg="$(git log -1 --pretty=%B)"
+
+          no_dep="no_dep=false"
+          no_tag="no_tag=false"
+          no_alarm="no_alarm=false"
+
+          [[ "$msg" == *"#no-dep"* ]] && no_dep="no_dep=true"
+          [[ "$msg" == *"#no-tag"* ]] && no_tag="no_tag=true"
+          [[ "$msg" == *"#no-alarm"* ]] && no_alarm="no_alarm=true"
+          
+          echo "$no_dep" >> "$GITHUB_OUTPUT"
+          echo "$no_tag" >> "$GITHUB_OUTPUT"
+          echo "$no_alarm" >> "$GITHUB_OUTPUT"
+      
+      - name: Build client
+        if: steps.skip_check.outputs.no_dep != 'true'
+        working-directory: client
+        run: npm run build
+        
+      - name: Push to deploment branch
+        if: steps.skip_check.outputs.no_dep != 'true'
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          git switch -C deployment
+          git add -A client/dist
+          git commit -m "Build frontend from $GITHUB_SHA"
+
+          git push origin deployment --force-with-lease
+
+      - name: Trigger deployment
+        if: steps.skip_check.outputs.no_dep != 'true'
+        run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
+
+
+  Release:
+    needs: [Deployment]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout tree
+        uses: actions/checkout@v4
+
+      - name: Bump version and push tag
+        if: needs.Deployment.outputs.no_tag != 'true'
+        uses: anothrNick/github-tag-action@4ed44965e0db8dab2b466a16da04aec3cc312fd8
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BUMP: patch
+          INITIAL_VERSION: 0.1.0
+
+  Notify:
+    runs-on: ubuntu-latest
+    needs: [Deployment]
+    if: ${{ always() }}
+    steps:
+      - name: notify on deployment success
+        if: ${{ needs.Deployment.result == 'success' && needs.Deployment.outputs.no_alarm != 'true' }}
+        run: |
+          curl -X POST -H "Content-Type: application/json" \
+            -d '{
+              "username": "Pikku Myy",
+              "avatar_url": "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse2.mm.bing.net%2Fth%2Fid%2FOIP.7SAFV037V1-ezvkAhffIWgHaHa%3Fpid%3DApi&f=1&ipt=f93d9e58395bec6151fbecf4165b5556a514a4aef44fc9ece95da62773c178bf&ipo=images",
+              "embeds": [
+                {
+                  "title": "Successfully deployed!",
+                  "description": "From deployment branch to [Render](${{ secrets.DEPLOYMENT_URL }}) by **${{ github.actor }}**",
+                  "color": 65280,
+                  "fields": [
+                    { "name": "Status", "value": "✅", "inline": true },
+                    { "name": "Repository", "value": "${{ github.repository }}", "inline": true }
+                  ],
+                  "footer": { "text": "Severity: Info" }
+                }
+              ]
+            }' \
+            ${{ secrets.DISCORD_WEBHOOK }}
+
+      - name: notify on deployment failure
+        if: ${{ needs.deployment.result == 'failure' && needs.Deployment.outputs.no_alarm != 'true' }}
+        run: |
+          curl -X POST -H "Content-Type: application/json" \
+            -d '{
+              "username": "Pikku Myy",
+              "avatar_url": "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse2.mm.bing.net%2Fth%2Fid%2FOIP.7SAFV037V1-ezvkAhffIWgHaHa%3Fpid%3DApi&f=1&ipt=f93d9e58395bec6151fbecf4165b5556a514a4aef44fc9ece95da62773c178bf&ipo=images",
+              "embeds": [
+                {
+                  "title": "Deployment failed!",
+                  "description": "Check [here](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for the run result",
+                  "color": 16711680,
+                  "fields": [
+                    { "name": "Status", "value": "❌", "inline": true },
+                    { "name": "Repository", "value": "${{ github.repository }}", "inline": true }
+                  ],
+                  "footer": { "text": "Severity: Error" }
+                }
+              ]
+            }' \
+            ${{ secrets.DISCORD_WEBHOOK }}
