@@ -7,4 +7,5 @@ zip -r project.zip . \
         "*/node_modules/*" \
         "*/.env" \
         "*/*.db" \
+        "*/*.svg" \
         ".git/*"
