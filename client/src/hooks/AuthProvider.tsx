@@ -43,10 +43,10 @@ export default function AuthProvider({
 
   const login = async (email: string, password: string) => {
     const { access_token } = await auth.login(email, password);
+    const me = await auth.fetchMe(access_token);
+
     localStorage.setItem("token", access_token);
     setToken(access_token);
-
-    const me = await auth.fetchMe(access_token);
     setUser(me);
   };
 

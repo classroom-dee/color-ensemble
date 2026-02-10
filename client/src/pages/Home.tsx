@@ -12,6 +12,7 @@ import "./Home.css";
 export default function Home() {
   const { user } = useAuth();
   const [mode, setMode] = useState<OutputMode>("ensembles");
+  const [added, setAdded] = useState<boolean>(false); // it's just a toggle
 
   const effectiveMode: OutputMode =
     user && mode === "favorites" ? "favorites" : "ensembles";
@@ -27,11 +28,11 @@ export default function Home() {
       </section>
 
       <section className="middle-right">
-        <OutputPanel mode={effectiveMode} />
+        <OutputPanel mode={effectiveMode} added={added} />
       </section>
 
       <footer className="bottom">
-        <ColorInputs />
+        <ColorInputs setAdded={setAdded} added={added} />
       </footer>
     </div>
   );
