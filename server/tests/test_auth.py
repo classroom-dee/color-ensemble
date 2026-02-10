@@ -13,11 +13,11 @@ def _unique_email() -> str:
 
 
 def _signup(client, email: str, password: str = 'test1234'):
-    return client.post('/auth/signup', json={'email': email, 'password': password})
+    return client.post('/api/auth/signup', json={'email': email, 'password': password})
 
 
 def _login(client, email: str, password: str = 'test1234'):
-    return client.post('/auth/login', json={'email': email, 'password': password})
+    return client.post('/api/auth/login', json={'email': email, 'password': password})
 
 
 def test_signup_and_login_returns_valid_token_and_me(client):
@@ -38,7 +38,7 @@ def test_signup_and_login_returns_valid_token_and_me(client):
 
     # token works on protected endpoint
     headers = {'Authorization': f'Bearer {data["access_token"]}'}
-    r = client.get('/users/me', headers=headers)
+    r = client.get('/api/users/me', headers=headers)
     assert r.status_code == 200
     me = r.json()
     assert me['email'] == email
@@ -67,12 +67,12 @@ def test_login_wrong_password_returns_401(client):
 
 
 def test_me_requires_authentication(client):
-    r = client.get('/users/me')
+    r = client.get('/api/users/me')
     assert r.status_code == 401
 
 
 def test_me_rejects_malformed_token(client):
-    r = client.get('/users/me', headers={'Authorization': 'Bearer not-a-jwt'})
+    r = client.get('/api/users/me', headers={'Authorization': 'Bearer not-a-jwt'})
     assert r.status_code == 401
     assert r.json()['detail'] == 'Could not validate credentials'
 
@@ -88,7 +88,7 @@ def test_me_rejects_non_string_subject(client):
         settings.JWT_SECRET_KEY,
         algorithm=settings.JWT_ALGORITHM,
     )
-    r = client.get('/users/me', headers={'Authorization': f'Bearer {token}'})
+    r = client.get('/api/users/me', headers={'Authorization': f'Bearer {token}'})
     assert r.status_code == 401
     assert r.json()['detail'] == 'Could not validate credentials'
 
@@ -109,6 +109,6 @@ def test_me_rejects_expired_token(client):
         algorithm=settings.JWT_ALGORITHM,
     )
 
-    r = client.get('/users/me', headers={'Authorization': f'Bearer {token}'})
+    r = client.get('/api/users/me', headers={'Authorization': f'Bearer {token}'})
     assert r.status_code == 401
     assert r.json()['detail'] == 'Could not validate credentials'

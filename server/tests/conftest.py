@@ -54,9 +54,9 @@ def client(engine):
 def _signup_and_login(
     client: TestClient, email: str = 'test@test.com', password: str = 'test1234'
 ):
-    r = client.post('/auth/signup', json={'email': email, 'password': password})
+    r = client.post('/api/auth/signup', json={'email': email, 'password': password})
     assert r.status_code in (200, 400)
-    r = client.post('/auth/login', json={'email': email, 'password': password})
+    r = client.post('/api/auth/login', json={'email': email, 'password': password})
     assert r.status_code == 200
     token = r.json()['access_token']
     return token

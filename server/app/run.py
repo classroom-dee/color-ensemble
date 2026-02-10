@@ -22,6 +22,6 @@ DIST_DIR = PROJ_ROOT / 'client' / 'dist'
 app.mount('/', StaticFiles(directory=DIST_DIR, html=True), name='frontend_static')
 
 
-@app.get('/health', tags=['health'])
+@app.get('/api/health', tags=['health'])
 def health_check():
     return {'status': 'ok', 'env': settings.ENV}
