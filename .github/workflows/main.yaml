@@ -101,6 +101,9 @@ jobs:
         with:
           node-version: '20'
 
+      # Should not push build artifact
+      # but for that I need to use separate runtime env in Render => two services
+      # This is for simplification
       - name: Build client
         if: steps.skip_check.outputs.no_dep != 'true'
         working-directory: client
@@ -118,7 +121,7 @@ jobs:
           git add -A client/dist
           git commit -m "Build frontend from $GITHUB_SHA"
 
-          git push origin deployment --force-with-lease
+          git push -f origin deployment
 
       - name: Trigger deployment
         if: steps.skip_check.outputs.no_dep != 'true'
