@@ -14,9 +14,9 @@ def create_app() -> FastAPI:
         allow_headers=['*'],
     )
 
-    app.include_router(auth.router)
-    app.include_router(users.router)
-    app.include_router(colors.router)
-    app.include_router(colors.favorites_router)
+    app.include_router(auth.router, prefix='/api')
+    app.include_router(users.router, prefix='/api')
+    app.include_router(colors.router, prefix='/api')
+    app.include_router(colors.favorites_router, prefix='/api')
 
     return app
