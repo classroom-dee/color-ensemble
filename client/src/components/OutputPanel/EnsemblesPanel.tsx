@@ -1,33 +1,27 @@
+import { useState } from "react";
+
 import { useColor } from "../../hooks/useColor";
 import { hslToRgb, rgbToHex, rotateHue } from "../../hooks/colorUtils";
+import { useFavorite } from "../../hooks/useFavorite";
+import { useAuth } from "../../hooks/useAuth";
+
+import { ensembles, type HarmonyType } from "../../types/color";
+
 import "./EnsemblesPanel.css";
 
-type Ensemble = {
-  name: string;
-  hues: number[];
-};
-
 export default function EnsemblesPanel() {
-  const { hsl, setHsl } = useColor();
+  const { hex, hsl, setHsl } = useColor();
+  const { addFavoriteHarmony } = useFavorite();
+  const { user, token } = useAuth();
+  const [status, setStatus] = useState<string | null>(null);
 
-  const ensembles: Ensemble[] = [
-    {
-      name: "Complementary",
-      hues: [0, 180],
-    },
-    {
-      name: "Analogous",
-      hues: [-30, 0, 30],
-    },
-    {
-      name: "Triadic",
-      hues: [0, 120, 240],
-    },
-    {
-      name: "Split-Complementary",
-      hues: [0, 150, 210],
-    },
-  ];
+  const onAddFavHarm = async (hex: string, harmony_type: HarmonyType) => {
+    if (!token) return;
+    const ok = await addFavoriteHarmony(hex, harmony_type);
+    setStatus(
+      ok ? "Added to favorite harmonies" : "Failed to add favorite harmonies",
+    );
+  };
 
   return (
     <div className="ensemble-output">
@@ -45,7 +39,7 @@ export default function EnsemblesPanel() {
               };
 
               const rgb = hslToRgb(color.h, color.s, color.l);
-              const hex = rgbToHex(rgb);
+              const _hex = rgbToHex(rgb);
 
               return (
                 <div
@@ -53,13 +47,24 @@ export default function EnsemblesPanel() {
                   className="swatch clickable"
                   onClick={() => setHsl(color)}
                 >
-                  <div className="color" style={{ backgroundColor: hex }}>
-                    <span className="hex">{hex}</span>
+                  <div className="color" style={{ backgroundColor: _hex }}>
+                    <span className="hex">{_hex}</span>
                   </div>
                 </div>
               );
             })}
           </div>
+
+          {user ? (
+            <div className="favorites">
+              <button onClick={() => onAddFavHarm(hex, ensemble.name)}>
+                Add to favorites
+              </button>
+              {status && <span className="status">{status}</span>}
+            </div>
+          ) : (
+            <span className="hint">Sign in to save favorites</span>
+          )}
         </div>
       ))}
     </div>

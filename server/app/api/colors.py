@@ -23,6 +23,9 @@ router = APIRouter(prefix='/colors', tags=['colors'])
 favorites_router = APIRouter(prefix='/favorites', tags=['favorites'])
 
 
+# --------------------------------------------
+# For api exposure (not called from frontend)
+# --------------------------------------------
 @router.post('/normalize', response_model=ColorFormatsOut)
 def normalize(payload: ColorInput):
     try:
@@ -66,6 +69,9 @@ def harmony(payload: ColorInput):
     )
 
 
+# --------------------------------------------
+# Favorites
+# --------------------------------------------
 @favorites_router.get('', response_model=list[FavoriteColorOut])
 def list_favorites(
     current_user: User = Depends(get_current_user),
@@ -136,6 +142,9 @@ def delete_favorite(
     return None
 
 
+# --------------------------------------------
+# Favorite Harmonies
+# --------------------------------------------
 @favorites_router.get(
     '/harmonies',
     response_model=list[FavoriteHarmonyOut],

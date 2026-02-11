@@ -1,3 +1,6 @@
+# POC Only! Don't do this in multi-worker settings
+# Don't save state in DB! (Self DDoS LMFAO)
+# Manage state in Redis OR limit traffic from a gateway
 import time
 from collections import defaultdict, deque
 

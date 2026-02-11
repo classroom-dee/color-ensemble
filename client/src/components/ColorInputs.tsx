@@ -1,18 +1,13 @@
 import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
-import { addFavorite } from "../services/favorites";
 import { useColor } from "../hooks/useColor";
+import { useFavorite } from "../hooks/useFavorite";
 
-export default function ColorInputs({
-  setAdded,
-  added,
-}: {
-  setAdded: React.Dispatch<React.SetStateAction<boolean>>;
-  added: boolean;
-}) {
+export default function ColorInputs() {
   const { user, token } = useAuth();
   const { hex, rgb, hsl, setHex, setRgb, setHsl } = useColor();
   const [status, setStatus] = useState<string | null>(null);
+  const { addFavorite } = useFavorite();
 
   /* ---------- helpers ---------- */
 
@@ -43,13 +38,8 @@ export default function ColorInputs({
 
   const onAddFavorite = async () => {
     if (!token) return;
-    try {
-      await addFavorite(token, hex);
-      setAdded(!added);
-      setStatus("Added to favorites");
-    } catch {
-      setStatus("Failed to add favorite");
-    }
+    const ok = await addFavorite(hex);
+    setStatus(ok ? "Added to favorites" : "Failed to add favorite");
   };
 
   /* ---------- render ---------- */
@@ -122,7 +112,6 @@ export default function ColorInputs({
         </div>
       </div>
 
-      {/* Favorites */}
       {user ? (
         <div className="favorites">
           <button onClick={onAddFavorite}>Add to favorites</button>
