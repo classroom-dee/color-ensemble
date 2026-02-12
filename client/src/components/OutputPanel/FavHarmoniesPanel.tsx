@@ -30,45 +30,68 @@ export default function FavHarmoniesPanel() {
   if (!favHarmonies.length) return <p>No favorites yet. Add some colors!</p>;
 
   return (
-    <div className="ensemble-output" style={{ flex: 1, overflowY: "auto" }}>
-      {favHarmonies.map((fh) => (
-        <div key={fh.id} className="ensemble">
-          <h4>{fh.harmony_type}</h4>
-          <div className="swatches">
-            {ensembles
-              .filter((ens) => ens.name == fh.harmony_type)?.[0]
-              .hues.map((delta) => {
-                const hsl = rgbToHsl(hexToRgb(fh.base_hex));
-                const hue = rotateHue(hsl.h, delta);
-                const color = {
-                  h: hue,
-                  s: hsl.s,
-                  l: hsl.l,
-                };
-                const newHex = rgbToHex(hslToRgb(color.h, color.s, color.l));
+    <div className="card flex-fill">
+      <div className="card-header py-1 px-2 small fw-semibold">
+        Favorite Harmonies
+      </div>
 
-                return (
-                  <div
-                    key={delta}
-                    className="swatch clickable"
-                    onClick={() => setHsl(color)}
-                  >
-                    <div className="color" style={{ backgroundColor: newHex }}>
-                      <span className="hex">{newHex}</span>
-                      <button
-                        className="delete"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onDelete(fh.id);
+      <div className="card-body p-2 overflow-auto">
+        {favHarmLoading && <div className="small text-muted">Loading…</div>}
+
+        {!favHarmLoading && !favHarmonies.length && (
+          <div className="small text-muted">No harmonies yet</div>
+        )}
+
+        <div className="d-flex flex-column gap-3">
+          {favHarmonies.map((fh) => (
+            <div key={fh.id}>
+              <div className="d-flex justify-content-between align-items-center mb-1">
+                <span className="small fw-semibold">{fh.harmony_type}</span>
+                <button
+                  className="btn btn-sm btn-outline-danger"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(fh.id);
+                  }}
+                >
+                  Delete
+                </button>
+              </div>
+              <div className="d-flex gap-1 flex-wrap">
+                {ensembles
+                  .find((ens) => ens.name == fh.harmony_type)!
+                  .hues.map((delta) => {
+                    const hsl = rgbToHsl(hexToRgb(fh.base_hex));
+                    const hue = rotateHue(hsl.h, delta);
+                    const color = {
+                      h: hue,
+                      s: hsl.s,
+                      l: hsl.l,
+                    };
+                    const newHex = rgbToHex(
+                      hslToRgb(color.h, color.s, color.l),
+                    );
+
+                    return (
+                      <div
+                        key={delta}
+                        className="rounded border"
+                        style={{
+                          width: 48,
+                          height: 48,
+                          backgroundColor: newHex,
+                          cursor: "pointer",
                         }}
-                      ></button>
-                    </div>
-                  </div>
-                );
-              })}
-          </div>
+                        onClick={() => setHsl(color)}
+                        title={newHex}
+                      />
+                    );
+                  })}
+              </div>
+            </div>
+          ))}
         </div>
-      ))}
+      </div>
     </div>
   );
 }

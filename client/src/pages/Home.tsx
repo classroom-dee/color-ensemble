@@ -17,22 +17,30 @@ export default function Home() {
     user && mode === "favorites" ? "favorites" : "ensembles";
 
   return (
-    <div className="app-grid">
-      <header className="nav">
-        <Navbar mode={effectiveMode} setMode={setMode} />
-      </header>
+    <div className="container py-4">
+      <div className="card shadow-sm app-card">
+        <div className="card-body p-3">
+          <div className="row g-3 mb-3">
+            <div className="mb-3">
+              <Navbar mode={effectiveMode} setMode={setMode} />
+            </div>
+          </div>
 
-      <section className="middle-left">
-        <ColorWheel />
-      </section>
+          <div className="row g-3 mb-3">
+            <div className="col-md-6">
+              <ColorWheel />
+            </div>
 
-      <section className="middle-right">
-        <OutputPanel mode={effectiveMode} />
-      </section>
+            <div className="col-md-6">
+              <OutputPanel mode={effectiveMode} />
+            </div>
+          </div>
 
-      <footer className="bottom">
-        <ColorInputs />
-      </footer>
+          <div>
+            <ColorInputs />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

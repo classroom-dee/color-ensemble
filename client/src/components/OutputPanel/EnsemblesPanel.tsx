@@ -13,60 +13,89 @@ export default function EnsemblesPanel() {
   const { hex, hsl, setHsl } = useColor();
   const { addFavoriteHarmony } = useFavorite();
   const { user, token } = useAuth();
-  const [status, setStatus] = useState<string | null>(null);
+
+  const [statusByEns, setStatusByEns] = useState<Record<string, string | null>>(
+    {},
+  );
 
   const onAddFavHarm = async (hex: string, harmony_type: HarmonyType) => {
     if (!token) return;
     const ok = await addFavoriteHarmony(hex, harmony_type);
-    setStatus(
-      ok ? "Added to favorite harmonies" : "Failed to add favorite harmonies",
-    );
+    setStatusByEns((prev) => ({
+      ...prev,
+      [harmony_type]: ok ? "Added to favorite harmonies" : "Failed to add",
+    }));
+    setTimeout(() => {
+      setStatusByEns((prev) => ({
+        ...prev,
+        [harmony_type]: null,
+      }));
+    }, 3000);
   };
 
   return (
-    <div className="ensemble-output">
-      {ensembles.map((ensemble) => (
-        <div key={ensemble.name} className="ensemble">
-          <h4>{ensemble.name}</h4>
+    <div className="card flex-fill">
+      <div className="card-header py-1 px-2 small fw-semibold">
+        Color Ensembles
+      </div>
 
-          <div className="swatches">
-            {ensemble.hues.map((delta) => {
-              const hue = rotateHue(hsl.h, delta);
-              const color = {
-                h: hue,
-                s: hsl.s,
-                l: hsl.l,
-              };
+      <div className="card-body p-2 overflow-auto">
+        <div className="d-flex flex-column gap-3">
+          {ensembles.map((ensemble) => (
+            <div key={ensemble.name}>
+              {/* Ensemble Header */}
+              <div className="d-flex justify-content-between align-items-center mb-1">
+                <span className="small fw-semibold">{ensemble.name}</span>
 
-              const rgb = hslToRgb(color.h, color.s, color.l);
-              const _hex = rgbToHex(rgb);
+                {user ? (
+                  statusByEns[ensemble.name] && (
+                    <span className="text-info small">
+                      {statusByEns[ensemble.name]}
+                    </span>
+                  )
+                ) : (
+                  <span className="text-warning small">
+                    Sign in to save favorites
+                  </span>
+                )}
+              </div>
 
-              return (
-                <div
-                  key={delta}
-                  className="swatch clickable"
-                  onClick={() => setHsl(color)}
-                >
-                  <div className="color" style={{ backgroundColor: _hex }}>
-                    <span className="hex">{_hex}</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+              {/* Swatches */}
+              <div className="d-flex flex-wrap gap-1">
+                {ensemble.hues.map((delta) => {
+                  const hue = rotateHue(hsl.h, delta);
+                  const color = {
+                    h: hue,
+                    s: hsl.s,
+                    l: hsl.l,
+                  };
 
-          {user ? (
-            <div className="favorites">
-              <button onClick={() => onAddFavHarm(hex, ensemble.name)}>
-                Add to favorites
-              </button>
-              {status && <span className="status">{status}</span>}
+                  const rgb = hslToRgb(color.h, color.s, color.l);
+                  const _hex = rgbToHex(rgb);
+
+                  return (
+                    <div
+                      key={delta}
+                      className="ensemble-swatch"
+                      style={{
+                        backgroundColor: _hex,
+                      }}
+                      onClick={() => {
+                        setHsl(color);
+                        if (user) {
+                          onAddFavHarm(hex, ensemble.name);
+                        }
+                      }}
+                    >
+                      <span className="plus">+</span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          ) : (
-            <span className="hint">Sign in to save favorites</span>
-          )}
+          ))}
         </div>
-      ))}
+      </div>
     </div>
   );
 }

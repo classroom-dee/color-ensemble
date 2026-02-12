@@ -53,11 +53,16 @@ const FavoritesProvider = ({ children }: { children: React.ReactNode }) => {
       if (!token) return false; // maybe upgrade later to message
       if (!validateHex(hex)) return false; // this too
 
+      // dedupe
+      if (favorites.some((f) => f.hex === hex)) {
+        return false;
+      }
+
       const newFav = await addFav(token, hex);
       setFavoritesState((prev) => [...prev, newFav]);
       return true;
     },
-    [token],
+    [token, favorites],
   );
 
   const deleteFavorite = useCallback(
@@ -74,15 +79,26 @@ const FavoritesProvider = ({ children }: { children: React.ReactNode }) => {
     [token],
   );
 
+  const compKey = (hex: string, h_type: HarmonyType) => `${hex}|${h_type}`;
+
   const addFavoriteHarmony = useCallback(
     async (hex: string, h_type: HarmonyType) => {
       if (!token) return false;
       if (!validateHex(hex)) return false; // this too
+
+      if (
+        favHarmonies.some(
+          (fh) =>
+            compKey(fh.base_hex, fh.harmony_type) === compKey(hex, h_type),
+        )
+      ) {
+        return false;
+      }
       const newFavHarm = await addFavHarm(token, hex, h_type);
       setFavHarmoniesState((prev) => [...prev, newFavHarm]);
       return true;
     },
-    [token],
+    [token, favHarmonies],
   );
 
   const deleteFavoriteHarmony = useCallback(
