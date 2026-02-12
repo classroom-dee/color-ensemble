@@ -23,8 +23,8 @@ describe("Auth UI", () => {
 
     render(<Navbar />);
 
-    expect(screen.getByPlaceholderText("email")).toBeInTheDocument();
-    expect(screen.getByText("Sign in")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/email/i)).toBeInTheDocument();
+    expect(screen.getByText(/Sign in/i)).toBeInTheDocument();
   });
 
   test("shows user email and sign out when authenticated", () => {

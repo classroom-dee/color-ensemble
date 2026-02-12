@@ -14,4 +14,5 @@ zip -r project.zip . \
         "*/dist/*" \
         "*.zip" \
         "*README.md" \
-        "*/playwright-report/*"
+        "*/playwright-report/*" \
+        "*/test-results/*"

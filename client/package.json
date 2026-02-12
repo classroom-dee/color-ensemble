@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "test:unit": "vitest run",
     "test:unit:ui": "vitest --ui",
-    "test:e2e": "playwright test"
+    "test:local:e2e": "playwright test"
   },
   "dependencies": {
     "axios": "^1.13.5",
@@ -23,6 +23,7 @@
     "@playwright/test": "^1.58.2",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^24.10.12",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
