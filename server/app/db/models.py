@@ -24,6 +24,7 @@ class User(Base):
 
 class FavoriteColor(Base):
     __tablename__ = 'favorite_colors'
+    __table_args__ = (UniqueConstraint('user_id', 'hex'),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     user_id: Mapped[int] = mapped_column(

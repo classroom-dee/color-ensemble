@@ -34,36 +34,44 @@ export default function AuthPanel() {
   return (
     <form
       onSubmit={onSubmit}
-      style={{ display: "flex", gap: 8, alignItems: "center" }}
+      className="d-flex align-items-center gap-2 flex-nowrap"
     >
       <input
+        className="form-control form-control-sm"
+        style={{ width: 140 }}
         placeholder="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
       />
       <input
+        className="form-control form-control-sm"
+        style={{ width: 120 }}
         type="password"
         placeholder="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
 
-      <button type="submit">{mode === "login" ? "Sign in" : "Sign up"}</button>
+      <button
+        type="submit"
+        className={`btn btn-outline-${mode === "login" ? "warning" : "success"} text-nowrap`}
+        style={{ minWidth: 72 }}
+      >
+        {mode === "login" ? "Sign in" : "Sign up"}
+      </button>
 
       <button
         type="button"
+        className={`btn btn-outline-${mode === "login" ? "success" : "warning"} text-nowrap`}
+        style={{ minWidth: 72 }}
         onClick={() => setMode(mode === "login" ? "register" : "login")}
-        style={{
-          background: "none",
-          border: "none",
-          textDecoration: "underline",
-          cursor: "pointer",
-        }}
       >
         {mode === "login" ? "Sign up" : "Sign in"}
       </button>
 
-      {error && <span style={{ color: "red" }}>{error}</span>}
+      {error && (
+        <span className="text-danger small ms-1 text-nowrap">{error}</span>
+      )}
     </form>
   );
 }

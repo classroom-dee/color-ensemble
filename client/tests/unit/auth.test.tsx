@@ -23,8 +23,8 @@ describe("Auth UI", () => {
 
     render(<Navbar />);
 
-    expect(screen.getByPlaceholderText("email")).toBeInTheDocument();
-    expect(screen.getByText("Sign in")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/email/i)).toBeInTheDocument();
+    expect(screen.getByText(/Sign in/i)).toBeInTheDocument();
   });
 
   test("shows user email and sign out when authenticated", () => {
@@ -39,7 +39,7 @@ describe("Auth UI", () => {
     render(<Navbar />);
 
     expect(screen.getByText("test@example.com")).toBeInTheDocument();
-    expect(screen.getByText("Sign out")).toBeInTheDocument();
+    expect(screen.getByText("Logout")).toBeInTheDocument();
   });
 
   test("login failure displays error", async () => {
@@ -81,7 +81,7 @@ describe("Auth UI", () => {
 
     render(<Navbar />);
 
-    fireEvent.click(screen.getByText("Sign out"));
+    fireEvent.click(screen.getByText("Logout"));
     expect(logout).toHaveBeenCalled();
   });
 });

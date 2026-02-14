@@ -1,18 +1,13 @@
 import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
-import { addFavorite } from "../services/favorites";
 import { useColor } from "../hooks/useColor";
+import { useFavorite } from "../hooks/useFavorite";
 
-export default function ColorInputs({
-  setAdded,
-  added,
-}: {
-  setAdded: React.Dispatch<React.SetStateAction<boolean>>;
-  added: boolean;
-}) {
+export default function ColorInputs() {
   const { user, token } = useAuth();
   const { hex, rgb, hsl, setHex, setRgb, setHsl } = useColor();
   const [status, setStatus] = useState<string | null>(null);
+  const { addFavorite } = useFavorite();
 
   /* ---------- helpers ---------- */
 
@@ -43,94 +38,93 @@ export default function ColorInputs({
 
   const onAddFavorite = async () => {
     if (!token) return;
-    try {
-      await addFavorite(token, hex);
-      setAdded(!added);
-      setStatus("Added to favorites");
-    } catch {
-      setStatus("Failed to add favorite");
-    }
+    const ok = await addFavorite(hex);
+    setStatus(ok ? "Added to favorites" : "Failed to add favorite");
+    setTimeout(() => {
+      setStatus("");
+    }, 3000);
   };
 
   /* ---------- render ---------- */
 
   return (
-    <div className="color-inputs">
-      {/* HEX */}
-      <div className="input-group">
-        <label>HEX</label>
-        <input
-          value={hex}
-          onChange={(e) => onHexChange(e.target.value)}
-          placeholder="#ff0000"
-        />
-      </div>
+    <div className="card">
+      <div className="card-body p-2">
+        <div className="row g-3 align-items-end">
+          {/* HEX */}
+          <div className="col-auto">
+            <label className="form-label small mb-1">HEX</label>
+            <input
+              className="form-control form-control-sm"
+              value={hex}
+              onChange={(e) => onHexChange(e.target.value)}
+              placeholder="#ff0000"
+            />
+          </div>
 
-      {/* RGB */}
-      <div className="input-group">
-        <label>RGB</label>
-        <div className="row">
-          <input
-            type="number"
-            min={0}
-            max={255}
-            value={rgb.r}
-            onChange={(e) => onRgbChange("r", e.target.value)}
-          />
-          <input
-            type="number"
-            min={0}
-            max={255}
-            value={rgb.g}
-            onChange={(e) => onRgbChange("g", e.target.value)}
-          />
-          <input
-            type="number"
-            min={0}
-            max={255}
-            value={rgb.b}
-            onChange={(e) => onRgbChange("b", e.target.value)}
-          />
+          {/* RGB */}
+          <div className="col-auto">
+            <label className="form-label small mb-1">RGB</label>
+            <div className="d-flex gap-1">
+              {(["r", "g", "b"] as const).map((c) => (
+                <input
+                  key={c}
+                  className="form-control form-control-sm text-center"
+                  style={{ width: 56 }}
+                  type="number"
+                  min={0}
+                  max={255}
+                  value={rgb[c]}
+                  onChange={(e) => onRgbChange(c, e.target.value)}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* HSL */}
+          <div className="col-auto">
+            <label className="form-label small mb-1">HSL</label>
+            <div className="d-flex gap-1">
+              {(["h", "s", "l"] as const).map((c) => (
+                <input
+                  key={c}
+                  className="form-control form-control-sm text-center"
+                  style={{ width: 56 }}
+                  type="number"
+                  min={0}
+                  max={c === "h" ? 360 : 100}
+                  value={hsl[c]}
+                  onChange={(e) => onHslChange(c, e.target.value)}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="col-auto">
+            {user ? (
+              <div className="d-flex gap-2">
+                <button
+                  className="btn btn-primary btn-sm"
+                  onClick={onAddFavorite}
+                >
+                  Add
+                </button>
+                {status && (
+                  <div
+                    className={`text-${status[0] === "A" ? "success" : "danger"} small mt-1`}
+                  >
+                    {status}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <span className="text-warning small">
+                Sign in to save favorites
+              </span>
+            )}
+          </div>
         </div>
       </div>
-
-      {/* HSL */}
-      <div className="input-group">
-        <label>HSL</label>
-        <div className="row">
-          <input
-            type="number"
-            min={0}
-            max={360}
-            value={hsl.h}
-            onChange={(e) => onHslChange("h", e.target.value)}
-          />
-          <input
-            type="number"
-            min={0}
-            max={100}
-            value={hsl.s}
-            onChange={(e) => onHslChange("s", e.target.value)}
-          />
-          <input
-            type="number"
-            min={0}
-            max={100}
-            value={hsl.l}
-            onChange={(e) => onHslChange("l", e.target.value)}
-          />
-        </div>
-      </div>
-
-      {/* Favorites */}
-      {user ? (
-        <div className="favorites">
-          <button onClick={onAddFavorite}>Add to favorites</button>
-          {status && <span className="status">{status}</span>}
-        </div>
-      ) : (
-        <span className="hint">Sign in to save favorites</span>
-      )}
     </div>
   );
 }

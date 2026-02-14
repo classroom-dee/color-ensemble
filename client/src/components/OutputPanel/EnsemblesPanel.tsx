@@ -1,67 +1,101 @@
+import { useState } from "react";
+
 import { useColor } from "../../hooks/useColor";
 import { hslToRgb, rgbToHex, rotateHue } from "../../hooks/colorUtils";
+import { useFavorite } from "../../hooks/useFavorite";
+import { useAuth } from "../../hooks/useAuth";
+
+import { ensembles, type HarmonyType } from "../../types/color";
+
 import "./EnsemblesPanel.css";
 
-type Ensemble = {
-  name: string;
-  hues: number[];
-};
-
 export default function EnsemblesPanel() {
-  const { hsl, setHsl } = useColor();
+  const { hex, hsl, setHsl } = useColor();
+  const { addFavoriteHarmony } = useFavorite();
+  const { user, token } = useAuth();
 
-  const ensembles: Ensemble[] = [
-    {
-      name: "Complementary",
-      hues: [0, 180],
-    },
-    {
-      name: "Analogous",
-      hues: [-30, 0, 30],
-    },
-    {
-      name: "Triadic",
-      hues: [0, 120, 240],
-    },
-    {
-      name: "Split-Complementary",
-      hues: [0, 150, 210],
-    },
-  ];
+  const [statusByEns, setStatusByEns] = useState<Record<string, string | null>>(
+    {},
+  );
+
+  const onAddFavHarm = async (hex: string, harmony_type: HarmonyType) => {
+    if (!token) return;
+    const ok = await addFavoriteHarmony(hex, harmony_type);
+    setStatusByEns((prev) => ({
+      ...prev,
+      [harmony_type]: ok ? "Added to favorite harmonies" : "Failed to add",
+    }));
+    setTimeout(() => {
+      setStatusByEns((prev) => ({
+        ...prev,
+        [harmony_type]: null,
+      }));
+    }, 3000);
+  };
 
   return (
-    <div className="ensemble-output">
-      {ensembles.map((ensemble) => (
-        <div key={ensemble.name} className="ensemble">
-          <h4>{ensemble.name}</h4>
+    <div className="card flex-fill">
+      <div className="card-header py-1 px-2 small fw-semibold">
+        Color Ensembles
+      </div>
 
-          <div className="swatches">
-            {ensemble.hues.map((delta) => {
-              const hue = rotateHue(hsl.h, delta);
-              const color = {
-                h: hue,
-                s: hsl.s,
-                l: hsl.l,
-              };
+      <div className="card-body p-2 overflow-auto">
+        <div className="d-flex flex-column gap-3">
+          {ensembles.map((ensemble) => (
+            <div key={ensemble.name}>
+              {/* Ensemble Header */}
+              <div className="d-flex justify-content-between align-items-center mb-1">
+                <span className="small fw-semibold">{ensemble.name}</span>
 
-              const rgb = hslToRgb(color.h, color.s, color.l);
-              const hex = rgbToHex(rgb);
+                {user ? (
+                  statusByEns[ensemble.name] && (
+                    <span className="text-info small">
+                      {statusByEns[ensemble.name]}
+                    </span>
+                  )
+                ) : (
+                  <span className="text-warning small">
+                    Sign in to save favorites
+                  </span>
+                )}
+              </div>
 
-              return (
-                <div
-                  key={delta}
-                  className="swatch clickable"
-                  onClick={() => setHsl(color)}
-                >
-                  <div className="color" style={{ backgroundColor: hex }}>
-                    <span className="hex">{hex}</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+              {/* Swatches */}
+              <div className="d-flex flex-wrap gap-1">
+                {ensemble.hues.map((delta) => {
+                  const hue = rotateHue(hsl.h, delta);
+                  const color = {
+                    h: hue,
+                    s: hsl.s,
+                    l: hsl.l,
+                  };
+
+                  const rgb = hslToRgb(color.h, color.s, color.l);
+                  const _hex = rgbToHex(rgb);
+
+                  return (
+                    <div
+                      key={delta}
+                      className="ensemble-swatch"
+                      style={{
+                        backgroundColor: _hex,
+                      }}
+                      onClick={() => {
+                        setHsl(color);
+                        if (user) {
+                          onAddFavHarm(hex, ensemble.name);
+                        }
+                      }}
+                    >
+                      <span className="plus">+</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
-      ))}
+      </div>
     </div>
   );
 }

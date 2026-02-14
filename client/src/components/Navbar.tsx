@@ -2,57 +2,70 @@ import { useAuth } from "../hooks/useAuth";
 import AuthPanel from "./AuthPanel";
 import type { OutputMode } from "../types/state";
 
-export default function Navbar({
-  mode,
-  setMode,
-}: {
+interface Props {
   mode: OutputMode;
   setMode: (m: OutputMode) => void;
-}) {
+}
+
+export default function Navbar({ mode, setMode }: Props) {
   const { user, logout, loading } = useAuth();
 
   return (
-    <nav
-      style={{
-        display: "flex",
-        alignItems: "center",
-        padding: "0 16px",
-        gap: 16,
-      }}
-    >
-      {/* App icon / home */}
-      <strong
-        style={{
-          cursor: "pointer",
-          fontWeight: mode === "ensembles" ? "bold" : "normal",
-        }}
-        onClick={() => setMode("ensembles")}
-      >
-        🎨 Color Ensemble
-      </strong>
+    <div className="card">
+      <div className="card-body py-2 px-3">
+        <div className="d-flex align-items-center gap-3">
+          <div
+            className="rounded-circle d-flex align-items-center justify-content-center bg-light border"
+            style={{
+              width: 36,
+              height: 36,
+              fontSize: 18,
+              userSelect: "none",
+            }}
+            title="Color Ensemble"
+          >
+            🎨
+          </div>
 
-      {user && (
-        <strong
-          onClick={() => setMode("favorites")}
-          style={{
-            cursor: "pointer",
-            fontWeight: mode === "favorites" ? "bold" : "normal",
-          }}
-        >
-          My Favorites
-        </strong>
-      )}
+          <div className="btn-group btn-group-sm">
+            <button
+              className={`btn btn-outline-primary ${mode === "ensembles" ? "active" : ""}`}
+              onClick={() => setMode("ensembles")}
+            >
+              Ensembles
+            </button>
 
-      <div style={{ marginLeft: "auto" }}>
-        {loading ? null : user ? (
-          <>
-            <span style={{ marginRight: 8 }}>{user.email}</span>
-            <button onClick={logout}>Sign out</button>
-          </>
-        ) : (
-          <AuthPanel />
-        )}
+            {user && (
+              <button
+                className={`btn btn-outline-primary ${mode === "favorites" ? "active" : ""}`}
+                onClick={() => setMode("favorites")}
+              >
+                Favorites
+              </button>
+            )}
+          </div>
+
+          <div className="ms-auto d-flex align-items-center gap-2">
+            {loading ? (
+              <span className="text-muted small">Loading...</span>
+            ) : user ? (
+              <>
+                <span className="text-primary small text-nowrap">
+                  {user.email}
+                </span>
+                <button
+                  className="btn btn-sm btn-outline-danger"
+                  onClick={logout}
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <AuthPanel />
+            )}
+          </div>
+        </div>
       </div>
-    </nav>
+    </div>
   );
 }

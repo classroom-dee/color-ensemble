@@ -1,11 +1,18 @@
 #!/bin/bash
 
+rm -f ./project.zip
+
 zip -r project.zip . \
     -x \
         "*/.pytest_cache/*" \
         "*/__pycache__/*" \
         "*/node_modules/*" \
-        "*/.env" \
+        "*.env" \
         "*/*.db" \
         "*/*.svg" \
-        ".git/*"
+        ".git/*" \
+        "*/dist/*" \
+        "*.zip" \
+        "*README.md" \
+        "*/playwright-report/*" \
+        "*/test-results/*"
