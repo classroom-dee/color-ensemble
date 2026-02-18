@@ -1,3 +1,5 @@
+from fastapi_silk import setup_sql_profiler
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from app.core.config import settings
@@ -13,6 +15,7 @@ def get_engine():
 
 
 engine = get_engine()
+setup_sql_profiler(engine)
 
 SessionLocal = sessionmaker(
     autocommit=False,
