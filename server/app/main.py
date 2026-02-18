@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi_silk import SQLDebugMiddleware
 
 from app.db.init_db import init_db
 from app.core.config import settings
@@ -29,6 +30,8 @@ def create_app(is_prod=False) -> FastAPI:
         allow_methods=['*'],
         allow_headers=['*'],
     )
+
+    app.add_middleware(SQLDebugMiddleware)
 
     app.include_router(auth.router, prefix='/api')
     app.include_router(users.router, prefix='/api')
